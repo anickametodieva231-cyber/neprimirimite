@@ -3,62 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Устав на БЦК Непримиримите</title>
+    <title>Български централен комитет „Непримиримите“</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;
-            padding: 20px;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        p {
-            color: #34495e;
-            font-size: 1.2em;
-            margin-bottom: 30px;
-        }
-        .button {
-            display: inline-block;
-            padding: 15px 30px;
-            background-color: #2980b9;
-            color: white;
-            text-decoration: none;
-            font-size: 1.1em;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            margin: 10px;
-        }
-        .button:hover {
-            background-color: #1c5a85;
-        }
-        .protocol-button {
-            margin-top: 40px;
-        }
+        body { scroll-behavior: smooth; }
+        #navbar { transition: background-color 0.3s; }
+        .navbar-scrolled { background-color: rgba(30, 58, 138, 0.9); }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Устав на Българския централен комитет „Непримиримите“</h1>
-        <p>Вижте пълния текст на устава в Google Docs или GitHub.</p>
-        <a href="https://docs.google.com/document/d/1Gw7ymb1LD-PQd7UlhCzO_QpFQQh9I0FT/edit?usp=sharing&ouid=100305403535765588930&rtpof=true&sd=true" class="button">ПРОЧЕТИ УСТАВА В GOOGLE DOCS</a>
-        <a href="https://github.com/anickametodieva231-cyber/neprimirimite/blob/main/USTAV_BCK_NEPRIMIRIMITE.md" class="button">ПРОЧЕТИ УСТАВА В GITHUB</a>
-        <p class="protocol-button">
-            <a href="https://github.com/anickametodieva231-cyber/neprimirimite/blob/main/Protocol_BCK_Neprimirimite.pdf" class="button">ИЗТЕГЛИ ПРОТОКОЛ СЕГА</a>
-        </p>
-    </div>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <div id="root"></div>
+    <script type="text/babel">
+        function Navbar() {
+            const [scrolled, setScrolled] = React.useState(false);
+
+            React.useEffect(() => {
+                const handleScroll = () => {
+                    setScrolled(window.scrollY > 50);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <nav id="navbar" className={`fixed top-0 w-full z-10 ${scrolled ? 'navbar-scrolled' : 'bg-blue-900'} text-white p-4`}>
+                    <div className="container mx-auto flex justify-between items-center">
+                        <h1 className="text-xl font-bold">БЦК „Непримиримите“</h1>
+                        <div className="space-x-4">
+                            <a href="#home" className="hover:text-blue-300">Начало</a>
+                            <a href="#about" className="hover:text-blue-300">За нас</a>
+                            <a href="#statute" className="hover:text-blue-300">Устав</a>
+                            <a href="#protocol" className="hover:text-blue-300">Протокол</a>
+                        </div>
+                    </div>
+                </nav>
+            );
+        }
+
+        function Hero() {
+            return (
+                <section id="home" className="bg-blue-900 text-white h-screen flex items-center justify-center">
+                    <div className="text-center">
+                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Български централен комитет „Непримиримите“</h1>
+                        <p className="text-lg md:text-xl mb-6">Един за всички, всички за един</p>
+                        <a href="#about" className="bg-white text-blue-900 px-6 py-3 rounded-full font-semibold hover:bg-blue-100">Научи повече</a>
+                    </div>
+                </section>
+            );
+        }
+
+        function About() {
+            return (
+                <section id="about" className="py-16 px-4">
+                    <div className="container mx-auto">
+                        <h2 className="text-3xl font-bold text-center mb-8">За нас</h2>
+                        <p className="text-lg text-center max-w-3xl mx-auto">
+                            Българският централен комитет „Непримиримите“ е посветен на коренна промяна на деспотичното управление, което не защитава интересите на българския народ. Нашата мисия е да заменим сегашния елит с хора с висок морал, родолюбие и образование, като изградим система за взаимопомощ и граждански натиск за справедливост, икономическа свобода и духовно възраждане.
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+
+        function Statute() {
+            return (
+                <section id="statute" className="py-16 bg-white px-4">
+                    <div className="container mx-auto">
+                        <h2 className="text-3xl font-bold text-center mb-8">Устав</h2>
+                        <p className="text-lg text-center mb-6">
+                            Пълният текст на устава на БЦК „Непримиримите“ е достъпен на следните платформи:
+                        </p>
+                        <div className="flex justify-center space-x-4">
+                            <a href="https://docs.google.com" target="_blank" rel="noopener noreferrer" className="bg-blue-900 text-white px-6 py-3 rounded-full hover:bg-blue-700">
+                                ПРОЧЕТИ В GOOGLE DOCS
+                            </a>
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="bg-blue-900 text-white px-6 py-3 rounded-full hover:bg-blue-700">
+                                ПРОЧЕТИ В GITHUB
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        function Protocol() {
+            return (
+                <section id="protocol" className="py-16 px-4">
+                    <div className="container mx-auto text-center">
+                        <h2 className="text-3xl font-bold mb-8">Изтегли Протокол</h2>
+                        <p className="text-lg mb-6">
+                            Изтеглете образеца на протокола за учредяване на комитет към БЦК „Непримиримите“.
+                        </p>
+                        <a href="Protocol_BCK_Neprimirimite.pdf" download className="bg-blue-900 text-white px-6 py-3 rounded-full hover:bg-blue-700">
+                            ИЗТЕГЛИ ПРОТОКОЛ СЕГА
+                        </a>
+                    </div>
+                </section>
+            );
+        }
+
+        function Footer() {
+            return (
+                <footer className="bg-blue-900 text-white py-8">
+                    <div className="container mx-auto text-center">
+                        <p>&copy; 2025 Български централен комитет „Непримиримите“. Всички права запазени.</p>
+                    </div>
+                </footer>
+            );
+        }
+
+        function App() {
+            return (
+                <div>
+                    <Navbar />
+                    <Hero />
+                    <About />
+                    <Statute />
+                    <Protocol />
+                    <Footer />
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
 </html>
