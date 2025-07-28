@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
@@ -52,21 +13,16 @@
     <style>
         body { scroll-behavior: smooth; }
         #navbar { transition: background-color 0.3s; }
-        .navbar-scrolled { background-color: rgba(30, 58, 138, 0.9); }
+        .navbar-scrolled { background-color: rgba(30, 58, 138, 0.97); }
     </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
     <div id="root"></div>
     <script type="text/babel">
-        const documents = [
-            { id: 1, title: "Устав на БЦК „Непримиримите“", category: "Организационни", url: "ustav.pdf", lang: "bg" },
-            { id: 2, title: "Протокол за приемане на устава", category: "Организационни", url: "protocol_ustav.pdf", lang: "bg" },
-            { id: 3, title: "Шаблон за петиция „Справедлива сметка“", category: "Правна комисия", url: "petition_template.pdf", lang: "bg" },
-            { id: 4, title: "Концепция за борба с монополите", category: "Икономическа комисия", url: "monopoly_concept.pdf", lang: "bg" }
-        ];
-
+        // --- Responsive Navbar ---
         function Navbar() {
             const [scrolled, setScrolled] = React.useState(false);
+            const [menuOpen, setMenuOpen] = React.useState(false);
 
             React.useEffect(() => {
                 const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -75,76 +31,104 @@
             }, []);
 
             return (
-                <nav id="navbar" className={`fixed top-0 w-full z-10 ${scrolled ? 'navbar-scrolled' : 'bg-blue-900'} text-white p-4`}>
+                <nav id="navbar" className={`${scrolled ? 'navbar-scrolled' : 'bg-blue-900'} fixed w-full z-50 text-white p-2 md:p-4 shadow`}>
                     <div className="container mx-auto flex justify-between items-center">
-                        <h1 className="text-xl font-bold">БЦК „Непримиримите“</h1>
-                        <div className="space-x-4">
-                            <a href="#home" className="hover:text-blue-300">Начало</a>
+                        <h1 className="text-lg md:text-2xl font-bold">БЦК „Непримиримите“</h1>
+                        <div className="hidden md:flex space-x-6">
+                            <a href="#home" className="hover:text-blue-300 transition">Начало</a>
                             <a href="#about" className="hover:text-blue-300">За нас</a>
                             <a href="#documents" className="hover:text-blue-300">Документи</a>
-                            <a href="#petition" className="hover:text-blue-300">Жалба/Петиция</a>
-                            <a href="#finance" className="hover:text-blue-300">Финансови отчети</a>
+                            <a href="#petition" className="hover:text-blue-300">Петиция</a>
+                            <a href="#finance" className="hover:text-blue-300">Финанси</a>
                             <a href="#events" className="hover:text-blue-300">Събития</a>
                         </div>
+                        <button
+                            className="md:hidden block focus:outline-none"
+                            aria-label="Toggle menu"
+                            onClick={() => setMenuOpen(!menuOpen)}
+                        >
+                            <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M4 8h20M4 16h20"/>
+                            </svg>
+                        </button>
                     </div>
+                    {menuOpen && (
+                        <div className="bg-blue-900 md:hidden flex flex-col space-y-2 px-4 pt-2 pb-4">
+                            <a href="#home" className="hover:text-blue-300" onClick={() => setMenuOpen(false)}>Начало</a>
+                            <a href="#about" className="hover:text-blue-300" onClick={() => setMenuOpen(false)}>За нас</a>
+                            <a href="#documents" className="hover:text-blue-300" onClick={() => setMenuOpen(false)}>Документи</a>
+                            <a href="#petition" className="hover:text-blue-300" onClick={() => setMenuOpen(false)}>Петиция</a>
+                            <a href="#finance" className="hover:text-blue-300" onClick={() => setMenuOpen(false)}>Финанси</a>
+                            <a href="#events" className="hover:text-blue-300" onClick={() => setMenuOpen(false)}>Събития</a>
+                        </div>
+                    )}
                 </nav>
             );
         }
 
+        // --- Hero section ---
         function Hero() {
             return (
-                <section id="home" className="bg-blue-900 text-white h-screen flex items-center justify-center">
-                    <div className="text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Български централен комитет „Непримиримите“</h1>
-                        <p className="text-lg md:text-xl mb-6">Един за всички, всички за един</p>
-                        <a href="#about" className="bg-white text-blue-900 px-6 py-3 rounded-full font-semibold hover:bg-blue-100">Научи повече</a>
-                    </div>
+                <section id="home" className="bg-blue-900 text-white h-screen flex flex-col items-center justify-center">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4 text-center">Български централен комитет „Непримиримите“</h1>
+                    <p className="text-lg md:text-xl mb-6 text-center">Един за всички, всички за един</p>
+                    <a href="#about" className="bg-white text-blue-900 px-8 py-3 rounded-full font-semibold hover:bg-blue-100 transition">Научи повече</a>
                 </section>
             );
         }
 
+        // --- About section ---
         function About() {
             return (
-                <section id="about" className="py-16 px-4">
+                <section id="about" className="py-14 px-4 bg-white">
                     <div className="container mx-auto">
-                        <h2 className="text-3xl font-bold text-center mb-8">За нас</h2>
-                        <p className="text-lg text-center max-w-3xl mx-auto">
-                            Българският централен комитет „Непримиримите“ е посветен на коренна промяна на деспотичното управление, което не защитава интересите на българския народ. Нашата мисия е да заменим сегашния елит с хора с висок морал, родолюбие и образование, като изградим система за взаимопомощ и граждански натиск за справедливост, икономическа свобода и духовно възраждане.
+                        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">За нас</h2>
+                        <p className="text-lg text-center max-w-2xl mx-auto">
+                            Българският централен комитет „Непримиримите“ е посветен на коренна промяна на управлението, защита на народните интереси, възраждане на традициите, морала и духовността. Работим за справедлива икономика, независима съдебна система и гражданска солидарност.
                         </p>
                     </div>
                 </section>
             );
         }
 
+        // --- Documents section ---
+        const documents = [
+            { id: 1, title: "Устав на БЦК „Непримиримите“", category: "Организационни", url: "ustav.pdf", lang: "bg" },
+            { id: 2, title: "Protocol for Committee Establishment", category: "Организационни", url: "protocol.pdf", lang: "en" },
+            { id: 3, title: "Шаблон за петиция „Справедлива сметка“", category: "Правна комисия", url: "petition_template.pdf", lang: "bg" },
+            { id: 4, title: "Концепция за борба с монополите", category: "Икономическа комисия", url: "monopoly_concept.pdf", lang: "bg" }
+        ];
+
         function Documents() {
             const [filter, setFilter] = React.useState('all');
-            const [lang, setLang] = React.useState('bg');
+            const [lang, setLang] = React.useState('all');
 
-            const filteredDocuments = documents.filter(doc => 
-                (filter === 'all' || doc.category === filter) && (lang === 'all' || doc.lang === lang)
+            const filteredDocs = documents.filter(doc =>
+                (filter === 'all' || doc.category === filter) &&
+                (lang === 'all' || doc.lang === lang)
             );
 
             return (
-                <section id="documents" className="py-16 bg-white px-4">
+                <section id="documents" className="py-14 bg-gray-50 px-4">
                     <div className="container mx-auto">
-                        <h2 className="text-3xl font-bold text-center mb-8">Документи</h2>
-                        <div className="flex justify-center space-x-4 mb-6">
-                            <select onChange={(e) => setFilter(e.target.value)} className="p-2 border rounded">
+                        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Документи</h2>
+                        <div className="flex flex-wrap justify-center gap-4 mb-4">
+                            <select onChange={e => setFilter(e.target.value)} className="p-2 border rounded">
                                 <option value="all">Всички категории</option>
                                 <option value="Организационни">Организационни</option>
                                 <option value="Правна комисия">Правна комисия</option>
                                 <option value="Икономическа комисия">Икономическа комисия</option>
                             </select>
-                            <select onChange={(e) => setLang(e.target.value)} className="p-2 border rounded">
+                            <select onChange={e => setLang(e.target.value)} className="p-2 border rounded">
                                 <option value="all">Всички езици</option>
                                 <option value="bg">Български</option>
                                 <option value="en">Английски</option>
                             </select>
                         </div>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {filteredDocuments.map(doc => (
+                        <ul className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                            {filteredDocs.map(doc => (
                                 <li key={doc.id}>
-                                    <a href={doc.url} download className="block bg-blue-900 text-white p-4 rounded hover:bg-blue-700">
+                                    <a href={doc.url} download className="block bg-blue-900 text-white rounded p-4 hover:bg-blue-700 transition">
                                         {doc.title}
                                     </a>
                                 </li>
@@ -155,6 +139,7 @@
             );
         }
 
+        // --- Petition section ---
         function Petition() {
             const [formData, setFormData] = React.useState({
                 name: '',
@@ -191,23 +176,15 @@
                 doc.save('petition.pdf');
             };
 
-            const sendToTrollBox = () => {
-                const encrypted = CryptoJS.AES.encrypt(
-                    JSON.stringify(formData),
-                    'secret-key-123'
-                ).toString();
-                alert('Изпращане през TrollBox (симулация): ' + encrypted);
-            };
-
             React.useEffect(() => {
                 loadDraft();
             }, []);
 
             return (
-                <section id="petition" className="py-16 px-4">
+                <section id="petition" className="py-14 px-4 bg-white">
                     <div className="container mx-auto">
-                        <h2 className="text-3xl font-bold text-center mb-8">Попълване на жалба/петиция</h2>
-                        <div className="max-w-lg mx-auto space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Попълване на жалба / петиция</h2>
+                        <form className="max-w-xl mx-auto space-y-4">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium">Име</label>
                                 <input
@@ -244,33 +221,30 @@
                                     required
                                 ></textarea>
                             </div>
-                            <div className="flex space-x-4">
+                            <div className="flex flex-wrap gap-2">
                                 <button
+                                    type="button"
                                     onClick={saveDraft}
                                     className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600"
                                 >
                                     Запази чернова
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={generatePDF}
                                     className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
                                 >
                                     Генерирай PDF
                                 </button>
-                                <button
-                                    onClick={sendToTrollBox}
-                                    className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                                >
-                                    Изпрати през TrollBox
-                                </button>
                             </div>
                             {formData.saved && <p className="text-green-600">Черновата е запазена!</p>}
-                        </div>
+                        </form>
                     </div>
                 </section>
             );
         }
 
+        // --- Finance section ---
         function Finance() {
             const [isAuthenticated, setIsAuthenticated] = React.useState(false);
             const [password, setPassword] = React.useState('');
@@ -310,9 +284,9 @@
 
             if (!isAuthenticated) {
                 return (
-                    <section id="finance" className="py-16 px-4">
+                    <section id="finance" className="py-14 px-4 bg-gray-50">
                         <div className="container mx-auto max-w-lg">
-                            <h2 className="text-3xl font-bold text-center mb-8">Финансови отчети (само за касиери)</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Финансови отчети (само за касиери)</h2>
                             <form onSubmit={handleLogin} className="space-y-4">
                                 <div>
                                     <label htmlFor="password" className="block text-sm font-medium">Парола</label>
@@ -325,7 +299,7 @@
                                         required
                                     />
                                 </div>
-                                <button type="submit" className="bg-blue-900 text-white p-2 rounded hover:bg-blue-700">
+                                <button type="submit" className="bg-blue-900 text-white p-2 rounded hover:bg-blue-700 w-full">
                                     Вход
                                 </button>
                             </form>
@@ -335,10 +309,10 @@
             }
 
             return (
-                <section id="finance" className="py-16 px-4">
+                <section id="finance" className="py-14 px-4 bg-gray-50">
                     <div className="container mx-auto max-w-lg">
-                        <h2 className="text-3xl font-bold text-center mb-8">Финансови отчети</h2>
-                        <div className="space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Финансови отчети</h2>
+                        <form className="space-y-4">
                             <div>
                                 <label htmlFor="date" className="block text-sm font-medium">Дата</label>
                                 <input
@@ -389,17 +363,19 @@
                                 </select>
                             </div>
                             <button
+                                type="button"
                                 onClick={generateReport}
-                                className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
+                                className="bg-green-500 text-white p-2 rounded hover:bg-green-600 w-full"
                             >
                                 Генерирай отчет
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </section>
             );
         }
 
+        // --- Events section ---
         function Events() {
             const events = [
                 { id: 1, title: "Фестивал „Справедлив пазар“", date: "2025-08-15", location: "София" },
@@ -407,13 +383,13 @@
             ];
 
             return (
-                <section id="events" className="py-16 bg-white px-4">
+                <section id="events" className="py-14 px-4 bg-white">
                     <div className="container mx-auto">
-                        <h2 className="text-3xl font-bold text-center mb-8">Събития</h2>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6">Събития</h2>
+                        <ul className="grid gap-4 grid-cols-1 md:grid-cols-2">
                             {events.map(event => (
-                                <li key={event.id} className="bg-gray-100 p-4 rounded">
-                                    <h3 className="text-xl font-semibold">{event.title}</h3>
+                                <li key={event.id} className="bg-gray-100 p-4 rounded shadow">
+                                    <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
                                     <p>Дата: {event.date}</p>
                                     <p>Място: {event.location}</p>
                                 </li>
@@ -424,37 +400,42 @@
             );
         }
 
+        // --- Footer ---
         function Footer() {
             return (
-                <footer className="bg-blue-900 text-white py-8">
+                <footer className="bg-blue-900 text-white py-8 mt-10">
                     <div className="container mx-auto text-center">
                         <p>&copy; 2025 Български централен комитет „Непримиримите“. Всички права запазени.</p>
-                        <p className="mt-2">
-                            <a href="https://github.com/anickametodieva231-cyber/neprimirimite" target="_blank" rel="noopener noreferrer" className="hover:text-blue-300">GitHub</a> | 
-                            <a href="https://github.com/OmegaBlockchain/trollbox" target="_blank" rel="noopener noreferrer" className="hover:text-blue-300">TrollBox</a>
-                        </p>
+                        <div className="mt-2 flex justify-center gap-4">
+                            <a href="https://github.com/anickametodieva231-cyber/neprimirimite" target="_blank" rel="noopener noreferrer" className="hover:text-blue-300 transition">GitHub</a>
+                            <a href="https://github.com/OmegaBlockchain/trollbox" target="_blank" rel="noopener noreferrer" className="hover:text-blue-300 transition">TrollBox</a>
+                        </div>
                     </div>
                 </footer>
             );
         }
 
+        // --- Main App ---
         function App() {
             return (
                 <div>
                     <Navbar />
-                    <Hero />
-                    <About />
-                    <Documents />
-                    <Petition />
-                    <Finance />
-                    <Events />
-                    <Footer />
+                    <div className="pt-16 md:pt-20">
+                        <Hero />
+                        <About />
+                        <Documents />
+                        <Petition />
+                        <Finance />
+                        <Events />
+                        <Footer />
+                    </div>
                 </div>
             );
         }
 
         ReactDOM.render(<App />, document.getElementById('root'));
 
+        // Register Service Worker for offline support
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(error => {
                 console.error('Service Worker registration failed:', error);
